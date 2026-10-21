@@ -135,7 +135,12 @@ public partial class MainWindow : Window
         StatusLine.Text = BuildStatus(s);
 
         // The panel keeps its mode to itself until the first report after a power cycle.
-        if (!s.ModesKnown)
+        if (!s.DeviceConnected)
+        {
+            SyncText.Text = "NO PANEL";
+            SyncText.Foreground = (Brush)FindResource("Brush.Dim");
+        }
+        else if (!s.ModesKnown)
         {
             SyncText.Text = "PRESS A PANEL KEY";
             SyncText.Foreground = (Brush)FindResource("Brush.Warn");
@@ -192,7 +197,7 @@ public partial class MainWindow : Window
         if (s.SimConnected) parts.Add(string.IsNullOrWhiteSpace(s.Aircraft) ? "MSFS connected" : s.Aircraft);
         else parts.Add("MSFS not running");
 
-        if (!s.ModesKnown) parts.Add("waiting for the panel's mode");
+        if (s.DeviceConnected && !s.ModesKnown) parts.Add("waiting for the panel's mode");
 
         return string.Join("  ·  ", parts);
     }
