@@ -1,0 +1,513 @@
+<Window x:Class="MagentaBridge.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="Magenta Bridge"
+        Height="700" Width="800"
+        MinHeight="620" MinWidth="680"
+        WindowStyle="None" ResizeMode="CanResize"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource Brush.Window}"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        FontFamily="{DynamicResource Font.Ui}"
+        PreviewKeyDown="OnPreviewKeyDown">
+
+  <shell:WindowChrome.WindowChrome>
+    <shell:WindowChrome CaptionHeight="56" ResizeBorderThickness="6"
+                        GlassFrameThickness="0" CornerRadius="18"
+                        UseAeroCaptionButtons="False" />
+  </shell:WindowChrome.WindowChrome>
+
+  <!-- The window edge is rounded and stroked by DWM (WindowChrome). Drawing our own border
+       here produced a second, slightly different arc at the corners in light mode. -->
+  <Border BorderThickness="0" CornerRadius="0">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="56" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <!-- header: wordmark, live status, window controls -->
+    <Grid Grid.Row="0" Margin="22,0,8,0" Background="Transparent">
+      <!-- wordmark with the device named beneath it: the product is Magenta Bridge,
+           the panel it serves is the qualifier -->
+      <StackPanel VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal">
+          <Border Width="7" Height="7" CornerRadius="2" Background="{DynamicResource Brush.Accent}"
+                  VerticalAlignment="Center" />
+          <TextBlock Text="MAGENTA" FontSize="15" FontWeight="SemiBold" Margin="9,0,0,0"
+                     VerticalAlignment="Center" />
+          <TextBlock Text="BRIDGE" FontSize="15" Foreground="{DynamicResource Brush.Muted}" Margin="5,0,0,0"
+                     VerticalAlignment="Center" />
+        </StackPanel>
+        <TextBlock Text="PU Air Radio" FontSize="9" Margin="16,1,0,0"
+                   Foreground="{DynamicResource Brush.Dim}" />
+      </StackPanel>
+
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal" Margin="0,0,14,0">
+          <Ellipse x:Name="DeviceDot" Width="6" Height="6" Fill="{DynamicResource Brush.Bad}"
+                   VerticalAlignment="Center" />
+          <TextBlock x:Name="DeviceText" Text="RADIO" FontSize="9" VerticalAlignment="Center"
+                     Margin="6,0,0,0" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="0,0,6,0">
+          <Ellipse x:Name="SimDot" Width="6" Height="6" Fill="{DynamicResource Brush.Bad}"
+                   VerticalAlignment="Center" />
+          <TextBlock x:Name="SimText" Text="MSFS" FontSize="9" VerticalAlignment="Center"
+                     Margin="6,0,0,0" />
+        </StackPanel>
+        <Button Style="{StaticResource IconButton}" Content="—"
+                FontFamily="Segoe UI Symbol" FontSize="12" Margin="2,0,0,0"
+                shell:WindowChrome.IsHitTestVisibleInChrome="True" Click="OnMinimise" ToolTip="Minimise" />
+        <Button Style="{StaticResource IconButton}" Content="□"
+                FontFamily="Segoe UI Symbol" FontSize="12" Margin="2,0,0,0"
+                shell:WindowChrome.IsHitTestVisibleInChrome="True" Click="OnMaximise" ToolTip="Maximise" />
+        <Button Style="{StaticResource IconButton}" Content="✕"
+                FontFamily="Segoe UI Symbol" FontSize="12" Margin="2,0,0,0"
+                shell:WindowChrome.IsHitTestVisibleInChrome="True" Click="OnCloseWindow" ToolTip="Close to tray" />
+      </StackPanel>
+    </Grid>
+
+    <Grid Grid.Row="1" Margin="20,8,20,20">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <TextBlock x:Name="StatusLine" Grid.Row="0" FontSize="9" Foreground="{DynamicResource Brush.Muted}"
+               Margin="2,0,0,10" TextTrimming="CharacterEllipsis" />
+
+    <!-- body -->
+    <ScrollViewer x:Name="BodyScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+      <StackPanel>
+
+        <!-- first run: what this is and what to do first -->
+        <Border x:Name="WelcomeStrip" Style="{StaticResource Card}">
+          <StackPanel>
+            <TextBlock Text="WELCOME" FontSize="9" Foreground="{DynamicResource Brush.Dim}" />
+            <TextBlock Text="An independent replacement for PU CONNECT's radio. Your PU Radio talks to MSFS directly - no MobiFlight, no extra plug-ins."
+                       FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,6,0,0" />
+            <TextBlock Text="Turn a knob or rock a mode switch once. The panel keeps its selected COM/NAV mode to itself until it reports an input, so that first touch is how this window learns what you are on."
+                       FontSize="11" Foreground="{DynamicResource Brush.Muted}" TextWrapping="Wrap" Margin="0,4,0,0" />
+            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+              <Button x:Name="PrimaryWelcome" Style="{StaticResource PrimaryButton}" Click="OnVerifyPanel"
+                      Margin="0,0,8,0">
+                <TextBlock Text="Test your panel" Foreground="{DynamicResource Brush.OnAccent}" />
+              </Button>
+              <Button Content="Got it" Click="OnDismissWelcome" Margin="0" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- another program holding the display port, or no port at all -->
+        <Border x:Name="ConflictStrip" Style="{StaticResource Card}" Visibility="Collapsed"
+                BorderBrush="{DynamicResource Brush.Warn}">
+          <StackPanel>
+            <TextBlock x:Name="ConflictTitle" Text="DISPLAY LINK" FontSize="10"
+                       Foreground="{DynamicResource Brush.Warn}" />
+            <TextBlock x:Name="ConflictBody" FontSize="11" TextWrapping="Wrap" Margin="0,6,0,0" />
+            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+              <Button Content="Close PU CONNECT" Click="OnCloseVendorApp" Margin="0,0,8,0" />
+              <Button Content="Check again" Click="OnRecheckLink" Margin="0" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- HERO: the radio head, mirroring the panel one for one -->
+        <Border Style="{StaticResource Card}" Padding="16,14,16,16">
+          <StackPanel>
+            <Grid>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Border Width="28" Height="2" CornerRadius="1" Background="{DynamicResource Brush.Accent}"
+                        VerticalAlignment="Center" Margin="0,0,10,0" />
+                <TextBlock Text="RADIO HEAD" FontSize="9" Foreground="{DynamicResource Brush.Dim}" />
+              </StackPanel>
+              <TextBlock x:Name="SyncText" Text="PRESS A PANEL KEY" FontSize="9"
+                         HorizontalAlignment="Right" VerticalAlignment="Center"
+                         Foreground="{DynamicResource Brush.Warn}" />
+            </Grid>
+
+            <!-- column headers -->
+            <Grid Margin="0,14,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="108" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="26" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Grid.Column="1" Text="ACTIVE 1" FontSize="8" Foreground="{DynamicResource Brush.Dim}"
+                         Margin="3,0,0,4" />
+              <TextBlock Grid.Column="3" Text="STBY 1" FontSize="8" Foreground="{DynamicResource Brush.Dim}"
+                         Margin="3,0,0,4" />
+            </Grid>
+
+            <!-- side 1 -->
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="108" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="26" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+
+              <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <Border x:Name="Side1ComPill" Width="52" Height="24" CornerRadius="7" Background="Transparent"
+                        VerticalAlignment="Center" Margin="0,0,4,0">
+                  <Grid>
+                    <Border x:Name="Side1ComFill" CornerRadius="7" Background="{DynamicResource Brush.Accent}"
+                            Opacity="0.15" Visibility="Collapsed" />
+                    <TextBlock x:Name="Side1ComText" Text="COM1" FontSize="10" FontWeight="SemiBold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Brush.Dim}" />
+                  </Grid>
+                </Border>
+                <Border x:Name="Side1NavPill" Width="52" Height="24" CornerRadius="7" Background="Transparent"
+                        VerticalAlignment="Center">
+                  <Grid>
+                    <Border x:Name="Side1NavFill" CornerRadius="7" Background="{DynamicResource Brush.Accent}"
+                            Opacity="0.15" Visibility="Collapsed" />
+                    <TextBlock x:Name="Side1NavText" Text="NAV1" FontSize="10" FontWeight="SemiBold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Brush.Dim}" />
+                  </Grid>
+                </Border>
+              </StackPanel>
+
+              <Border Grid.Column="1" Background="{DynamicResource Brush.Window}" CornerRadius="9" Padding="10,4,12,5">
+                <TextBlock x:Name="Side1Active" Text="---.---" FontSize="26" FontWeight="SemiBold"
+                           FontFamily="{DynamicResource Font.Mono}" HorizontalAlignment="Right"
+                           VerticalAlignment="Center" />
+              </Border>
+
+              <TextBlock Grid.Column="2" Text=">" FontSize="11" HorizontalAlignment="Center"
+                         VerticalAlignment="Center" Foreground="{DynamicResource Brush.Accent}" />
+
+              <Border Grid.Column="3" Background="{DynamicResource Brush.Window}" CornerRadius="9" Padding="10,4,12,5">
+                <TextBlock x:Name="Side1Standby" Text="---.---" FontSize="26" FontWeight="SemiBold"
+                           FontFamily="{DynamicResource Font.Mono}" HorizontalAlignment="Right"
+                           VerticalAlignment="Center" Foreground="{DynamicResource Brush.Muted}" />
+              </Border>
+            </Grid>
+
+            <Grid Margin="0,14,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="108" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="26" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Grid.Column="1" Text="ACTIVE 2" FontSize="8" Foreground="{DynamicResource Brush.Dim}"
+                         Margin="3,0,0,4" />
+              <TextBlock Grid.Column="3" Text="STBY 2" FontSize="8" Foreground="{DynamicResource Brush.Dim}"
+                         Margin="3,0,0,4" />
+            </Grid>
+
+            <!-- side 2 -->
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="108" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="26" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+
+              <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <Border x:Name="Side2ComPill" Width="52" Height="24" CornerRadius="7" Background="Transparent"
+                        VerticalAlignment="Center" Margin="0,0,4,0">
+                  <Grid>
+                    <Border x:Name="Side2ComFill" CornerRadius="7" Background="{DynamicResource Brush.Accent}"
+                            Opacity="0.15" Visibility="Collapsed" />
+                    <TextBlock x:Name="Side2ComText" Text="COM2" FontSize="10" FontWeight="SemiBold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Brush.Dim}" />
+                  </Grid>
+                </Border>
+                <Border x:Name="Side2NavPill" Width="52" Height="24" CornerRadius="7" Background="Transparent"
+                        VerticalAlignment="Center">
+                  <Grid>
+                    <Border x:Name="Side2NavFill" CornerRadius="7" Background="{DynamicResource Brush.Accent}"
+                            Opacity="0.15" Visibility="Collapsed" />
+                    <TextBlock x:Name="Side2NavText" Text="NAV2" FontSize="10" FontWeight="SemiBold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Brush.Dim}" />
+                  </Grid>
+                </Border>
+              </StackPanel>
+
+              <Border Grid.Column="1" Background="{DynamicResource Brush.Window}" CornerRadius="9" Padding="10,4,12,5">
+                <TextBlock x:Name="Side2Active" Text="---.---" FontSize="26" FontWeight="SemiBold"
+                           FontFamily="{DynamicResource Font.Mono}" HorizontalAlignment="Right"
+                           VerticalAlignment="Center" />
+              </Border>
+
+              <TextBlock Grid.Column="2" Text=">" FontSize="11" HorizontalAlignment="Center"
+                         VerticalAlignment="Center" Foreground="{DynamicResource Brush.Accent}" />
+
+              <Border Grid.Column="3" Background="{DynamicResource Brush.Window}" CornerRadius="9" Padding="10,4,12,5">
+                <TextBlock x:Name="Side2Standby" Text="---.---" FontSize="26" FontWeight="SemiBold"
+                           FontFamily="{DynamicResource Font.Mono}" HorizontalAlignment="Right"
+                           VerticalAlignment="Center" Foreground="{DynamicResource Brush.Muted}" />
+              </Border>
+            </Grid>
+
+            <Border Height="1" Background="{DynamicResource Brush.Stroke}" Margin="0,14,0,10" />
+
+            <Grid>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="INNER RING" FontSize="8" Foreground="{DynamicResource Brush.Dim}" />
+                <TextBlock Text="kHz step" FontSize="10" Margin="6,0,16,0" Foreground="{DynamicResource Brush.Muted}" />
+                <TextBlock Text="OUTER RING" FontSize="8" Foreground="{DynamicResource Brush.Dim}" />
+                <TextBlock Text="1 MHz" FontSize="10" Margin="6,0,16,0" Foreground="{DynamicResource Brush.Muted}" />
+                <TextBlock Text="PUSH" FontSize="8" Foreground="{DynamicResource Brush.Dim}" />
+                <TextBlock Text="transfer" FontSize="10" Margin="6,0,0,0" Foreground="{DynamicResource Brush.Muted}" />
+              </StackPanel>
+              <TextBlock x:Name="LastActionText" Text="" FontSize="10" HorizontalAlignment="Right"
+                         VerticalAlignment="Center" Foreground="{DynamicResource Brush.Dim}"
+                         TextTrimming="CharacterEllipsis" MaxWidth="300" />
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <!-- panel: connection, mode, and the guided test -->
+        <Border Style="{StaticResource Card}">
+          <StackPanel>
+            <Grid>
+              <TextBlock Text="PANEL" FontSize="9" Foreground="{DynamicResource Brush.Dim}"
+                         VerticalAlignment="Center" />
+              <TextBlock x:Name="PanelStateText" Text="not found" FontSize="10"
+                         HorizontalAlignment="Right" VerticalAlignment="Center"
+                         Foreground="{DynamicResource Brush.Muted}" />
+            </Grid>
+
+            <Grid Margin="0,10,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <StackPanel Grid.Column="0">
+                <TextBlock x:Name="DeviceLine" Text="-" FontSize="12" TextTrimming="CharacterEllipsis" />
+                <TextBlock x:Name="DeviceHint" Text="" FontSize="9" Margin="0,3,0,0"
+                           Foreground="{DynamicResource Brush.Dim}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Grid>
+
+            <!-- guided test: every control, ticked as it arrives -->
+            <StackPanel x:Name="SelfTestBody" Visibility="Collapsed" Margin="0,14,0,0">
+              <Border Height="1" Background="{DynamicResource Brush.Stroke}" Margin="0,0,0,12" />
+              <Grid>
+                <TextBlock x:Name="SelfTestHeadline" Text="Press each control in turn"
+                           FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                <TextBlock x:Name="SelfTestProgress" Text="0 of 14" FontSize="10"
+                           HorizontalAlignment="Right" VerticalAlignment="Center"
+                           Foreground="{DynamicResource Brush.Muted}" />
+              </Grid>
+              <TextBlock x:Name="SelfTestHint" Text="Cycle the four mode keys: COM1, NAV1, COM2, NAV2. Then the two knob pushes, then each rotary direction."
+                         FontSize="9" Foreground="{DynamicResource Brush.Dim}" TextWrapping="Wrap" Margin="0,4,0,10" />
+              <UniformGrid x:Name="SelfTestGrid" Columns="2" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- diagnostics: collapsed by default so the window never scrolls -->
+        <Border Style="{StaticResource Card}" Background="Transparent">
+          <StackPanel>
+            <Border Background="Transparent" Cursor="Hand" MouseLeftButtonUp="OnToggleDiagnostics">
+              <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <Path x:Name="ChevronDiagnostics" Data="M 1,3 L 5,7 L 9,3" Width="10" Height="10"
+                        Stroke="{DynamicResource Brush.Muted}" StrokeThickness="1.5"
+                        StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                        RenderTransformOrigin="0.5,0.5" Margin="0,0,8,0">
+                    <Path.RenderTransform>
+                      <RotateTransform x:Name="ChevronDiagnosticsRotate" Angle="0" />
+                    </Path.RenderTransform>
+                  </Path>
+                  <TextBlock Text="DIAGNOSTICS" FontSize="9" Foreground="{DynamicResource Brush.Dim}"
+                             VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBlock x:Name="CounterText" Text="-" FontSize="11" HorizontalAlignment="Right"
+                           Foreground="{DynamicResource Brush.Muted}" VerticalAlignment="Center" />
+              </Grid>
+            </Border>
+
+            <StackPanel x:Name="DiagnosticsBody" Visibility="Collapsed" Margin="0,10,0,0">
+              <TextBlock x:Name="ClientText" Text="SimConnect client: -" FontSize="11"
+                         TextTrimming="CharacterEllipsis" />
+              <TextBlock x:Name="AircraftText" Text="" FontSize="11" Margin="0,6,0,0"
+                         Foreground="{DynamicResource Brush.Muted}" TextTrimming="CharacterEllipsis" />
+              <TextBlock x:Name="PortText" Text="" FontSize="11" Margin="0,6,0,0"
+                         Foreground="{DynamicResource Brush.Muted}" TextWrapping="Wrap" />
+              <TextBlock x:Name="ErrorText" Text="" FontSize="11" Margin="0,6,0,0"
+                         Foreground="{DynamicResource Brush.Warn}" TextWrapping="Wrap" />
+              <TextBlock x:Name="SelfTestText" Text="" FontSize="11" Margin="0,8,0,0"
+                         Foreground="{DynamicResource Brush.Muted}" TextWrapping="Wrap"
+                         FontFamily="{DynamicResource Font.Mono}" Visibility="Collapsed" />
+              <Border Background="{DynamicResource Brush.Window}" CornerRadius="8" Margin="0,10,0,0"
+                      BorderBrush="{DynamicResource Brush.Stroke}" BorderThickness="1" Padding="8">
+                <ScrollViewer x:Name="LogScroll" Height="130" VerticalScrollBarVisibility="Hidden"
+                              HorizontalScrollBarVisibility="Hidden">
+                  <TextBlock x:Name="LogText" FontFamily="{DynamicResource Font.Mono}" FontSize="11"
+                             Foreground="{DynamicResource Brush.Muted}" TextWrapping="NoWrap" />
+                </ScrollViewer>
+              </Border>
+              <TextBlock Text="Open log file" FontSize="9" Margin="0,6,0,0" Cursor="Hand"
+                         Foreground="{DynamicResource Brush.Link}" TextDecorations="Underline"
+                         MouseLeftButtonUp="OnOpenLogs"
+                         ToolTip="Shows the full log, which keeps rotating history" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- footer: settings on the left, actions on the right, on the card grid -->
+    <Grid Grid.Row="2" Margin="0,12,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+
+      <StackPanel Grid.Column="0" VerticalAlignment="Center">
+        <TextBlock x:Name="VersionText" Text="" FontSize="9"
+                   Foreground="{DynamicResource Brush.Dim}" TextTrimming="CharacterEllipsis" />
+        <TextBlock x:Name="FeedbackLink" Margin="0,4,0,0" FontSize="9" Cursor="Hand"
+                   Foreground="{DynamicResource Brush.Link}"
+                   TextDecorations="Underline"
+                   MouseLeftButtonUp="OnSendFeedback"
+                   Text="Send comments, bugs, anything" ToolTip="alan@magentadebrief.com" />
+      </StackPanel>
+
+      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
+        <Button x:Name="PrimaryAction" Style="{StaticResource PrimaryButton}" Click="OnVerifyPanel"
+                Margin="0,0,8,0"
+                ToolTip="Guided check: press each control and watch it tick">
+          <TextBlock x:Name="PrimaryActionText" Text="Test your panel"
+                     Foreground="{DynamicResource Brush.OnAccent}" />
+        </Button>
+        <Button Content="Settings" Click="OnOpenSettings" Margin="0,0,8,0" />
+        <Button Content="Reload config" Click="OnReloadConfig" Margin="0,0,8,0" />
+        <Button Content="Hide" Click="OnHide" Style="{StaticResource GhostButton}" Margin="0" />
+      </StackPanel>
+    </Grid>
+
+    <!-- Settings overlay: full-window, grouped like the rest of the Magenta tools -->
+    <Border x:Name="SettingsOverlay" Grid.Row="0" Grid.RowSpan="3" Visibility="Collapsed"
+            Background="{DynamicResource Brush.Window}" CornerRadius="8" Padding="24,20,24,18">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,8">
+          <TextBlock Text="Settings" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" />
+          <Button Content="Close" Click="OnCloseSettings" HorizontalAlignment="Right"
+                  Style="{StaticResource GhostButton}" Margin="0" />
+        </Grid>
+
+        <!-- no ScrollViewer: the window grows to fit the sections instead of scrolling -->
+        <StackPanel x:Name="SettingsContent" Grid.Row="1" Margin="0,4,0,4">
+
+            <TextBlock Text="PANEL DISPLAY" FontSize="9" Foreground="{DynamicResource Brush.Dim}" Margin="0,8,0,8" />
+
+            <Grid Margin="0,0,0,2">
+              <TextBlock Text="TEXT BRIGHTNESS" FontSize="10" Foreground="{DynamicResource Brush.Muted}" />
+              <TextBlock x:Name="PanelBrightnessValue" Text="200" FontSize="10" HorizontalAlignment="Right"
+                         Foreground="{DynamicResource Brush.Muted}" />
+            </Grid>
+            <Slider x:Name="PanelBrightnessSlider" Style="{StaticResource WarmSlider}" Minimum="0" Maximum="250"
+                    SmallChange="5" LargeChange="25" ValueChanged="OnPanelBrightnessChanged" Margin="0,0,0,12" />
+
+            <Grid Margin="0,0,0,2">
+              <TextBlock Text="NUMERIC BRIGHTNESS" FontSize="10" Foreground="{DynamicResource Brush.Muted}" />
+              <TextBlock x:Name="DisplayBrightnessValue" Text="5" FontSize="10" HorizontalAlignment="Right"
+                         Foreground="{DynamicResource Brush.Muted}" />
+            </Grid>
+            <Slider x:Name="DisplayBrightnessSlider" Style="{StaticResource WarmSlider}" Minimum="0" Maximum="250"
+                    SmallChange="1" LargeChange="10" ValueChanged="OnDisplayBrightnessChanged" Margin="0,0,0,4" />
+            <TextBlock Text="The first value lights the printed labels; the second lights the numeric digits. Tune each to taste - both are remembered."
+                       FontSize="9" Foreground="{DynamicResource Brush.Dim}" TextWrapping="Wrap" Margin="0,0,0,10" />
+
+            <CheckBox x:Name="DimWhenDownBox" Style="{StaticResource Toggle}" Margin="0,4,0,8"
+                      Content="Dim the digits while MSFS is not running" Checked="OnDimWhenDownChanged"
+                      Unchecked="OnDimWhenDownChanged" />
+
+            <Border Height="1" Background="{DynamicResource Brush.Stroke}" Margin="0,12,0,0" />
+
+            <TextBlock Text="RADIO" FontSize="9" Foreground="{DynamicResource Brush.Dim}" Margin="0,16,0,8" />
+            <CheckBox x:Name="SwapBox" Style="{StaticResource Toggle}" Margin="0,0,0,8"
+                      Content="Knob push transfers active and standby" Checked="OnSwapChanged" Unchecked="OnSwapChanged" />
+            <CheckBox x:Name="FastSpinBox" Style="{StaticResource Toggle}" Margin="0,0,0,4"
+                      Content="Faster spin, more than one step per detent" Checked="OnFastSpinChanged" Unchecked="OnFastSpinChanged" />
+            <TextBlock Text="Off means one step per detent every time. On accelerates above roughly eleven detents a second."
+                       FontSize="9" Foreground="{DynamicResource Brush.Dim}" TextWrapping="Wrap" />
+
+            <Border Height="1" Background="{DynamicResource Brush.Stroke}" Margin="0,16,0,0" />
+
+            <TextBlock Text="BRIDGE" FontSize="9" Foreground="{DynamicResource Brush.Dim}" Margin="0,16,0,6" />
+            <Grid Margin="0,0,0,8">
+              <TextBlock Text="START WITH WINDOWS" FontSize="10"
+                         Foreground="{DynamicResource Brush.Muted}" VerticalAlignment="Center" />
+              <Button x:Name="StartupButton" Content="Off" Click="OnToggleStartup"
+                      HorizontalAlignment="Right" Padding="12,5" />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+              <TextBlock Text="ALWAYS ON TOP" FontSize="10"
+                         Foreground="{DynamicResource Brush.Muted}" VerticalAlignment="Center" />
+              <Button x:Name="TopmostButton" Content="Off" Click="OnToggleTopmost"
+                      HorizontalAlignment="Right" Padding="12,5" />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+              <TextBlock Text="THEME" FontSize="10"
+                         Foreground="{DynamicResource Brush.Muted}" VerticalAlignment="Center" />
+              <Button x:Name="ThemeButton" Content="Dark" Click="OnToggleTheme"
+                      HorizontalAlignment="Right" Padding="12,5" />
+            </Grid>
+            <TextBlock Text="Launches minimised to the tray and waits for the panel."
+                       FontSize="9" Foreground="{DynamicResource Brush.Dim}" TextWrapping="Wrap" />
+
+            <Border Height="1" Background="{DynamicResource Brush.Stroke}" Margin="0,16,0,0" />
+
+            <TextBlock Text="SIMULATOR" FontSize="9" Foreground="{DynamicResource Brush.Dim}" Margin="0,16,0,6" />
+            <TextBlock x:Name="SettingsClientText" Text="-" FontSize="10"
+                       Foreground="{DynamicResource Brush.Muted}" TextWrapping="Wrap" />
+            <TextBlock x:Name="SettingsConfigText" Text="-" FontSize="10" Margin="0,6,0,0"
+                       Foreground="{DynamicResource Brush.Muted}" TextWrapping="Wrap" />
+
+            <Border Height="1" Background="{DynamicResource Brush.Stroke}" Margin="0,16,0,0" />
+
+            <TextBlock Text="ABOUT" FontSize="9" Foreground="{DynamicResource Brush.Dim}" Margin="0,16,0,8" />
+            <Image x:Name="MagentaLockup" Width="120" Height="19" HorizontalAlignment="Left"
+                   Cursor="Hand" ToolTip="magentadebrief.com"
+                   MouseLeftButtonUp="OnMagenta"
+                   RenderOptions.BitmapScalingMode="HighQuality" />
+            <TextBlock Text="A Magenta Debrief tool. Free, no telemetry." FontSize="10"
+                       Foreground="{DynamicResource Brush.Muted}" Margin="0,8,0,0" />
+            <TextBlock Text="magentadebrief.com" FontSize="9" Margin="0,4,0,0"
+                       Foreground="{DynamicResource Brush.Link}" TextDecorations="Underline"
+                       Cursor="Hand" MouseLeftButtonUp="OnMagenta" />
+        </StackPanel>
+
+        <Grid Grid.Row="2" Margin="0,8,0,0">
+          <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <TextBlock x:Name="SettingsVersionText" Text="" FontSize="9"
+                       Foreground="{DynamicResource Brush.Dim}" />
+            <TextBlock Text="  ·  " FontSize="9" Foreground="{DynamicResource Brush.Dim}" />
+            <TextBlock Text="Tip jar" FontSize="9" Cursor="Hand" ToolTip="magentadebrief.com/donate"
+                       Foreground="{DynamicResource Brush.Link}" TextDecorations="Underline"
+                       MouseLeftButtonUp="OnDonate" />
+          </StackPanel>
+          <Button Content="Done" HorizontalAlignment="Right" Click="OnCloseSettings" />
+        </Grid>
+      </Grid>
+    </Border>
+    </Grid>
+  </Grid>
+  </Border>
+</Window>

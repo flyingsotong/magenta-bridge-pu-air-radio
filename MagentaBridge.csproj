@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>MagentaBridge-PuAirRadio</AssemblyName>
+    <RootNamespace>MagentaBridge</RootNamespace>
+    <AssemblyTitle>Magenta Bridge for PU Air Radio</AssemblyTitle>
+    <Product>Magenta Bridge for PU Air Radio</Product>
+    <Company>Local</Company>
+    <Version>0.1.0</Version>
+    <FileVersion>0.1.0.0</FileVersion>
+    <Description>A free client for the PU Air Radio panel in Microsoft Flight Simulator 2024</Description>
+    <ApplicationIcon>assets\magenta-bridge.ico</ApplicationIcon>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <!-- WFAC010 wants high-DPI declared via the WinForms API; this is a WPF app whose
+         manifest is the correct place for it. -->
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- UseWindowsForms adds implicit usings that collide with WPF type names
+         (Application, Color, Brush, MenuItem...). This project references WinForms
+         only through an explicit alias, so drop the globals. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Serial to the radio head. Microsoft's own package; no third-party surface. -->
+    <PackageReference Include="System.IO.Ports" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\magenta-lockup-dark.png" />
+    <Resource Include="Assets\magenta-lockup-light.png" />
+  </ItemGroup>
+</Project>
