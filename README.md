@@ -84,6 +84,8 @@ window shows the whole frequency; both agree.
   nothing.
 - **Faster spin, more than one step per detent** - off by default. One click is one step; turning
   it on lets a fast spin cover more ground, at the cost of precision.
+- **Open minimised to the tray** - applies to any launch, not just Windows startup. The tray icon
+  brings the window back.
 - **Start with Windows**, **Always on top**, **Theme**.
 
 `Esc` hides to the tray. `Ctrl+L` copies the log. The tray icon has the same actions as the window.

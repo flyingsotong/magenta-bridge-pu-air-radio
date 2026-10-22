@@ -69,9 +69,11 @@ public partial class App : Application
         // user's saved theme choice, so it could only follow the Windows setting.
         ApplyTheme();
 
-        // Keep the registry in step with the config, and honour --minimized on a boot launch.
+        // Keep the registry in step with the config. A boot launch passes --minimized, and the
+        // setting does the same for every launch.
         Core.Startup.Apply(config.StartWithWindows);
-        var minimized = e.Args.Any(a => a.Equals("--minimized", StringComparison.OrdinalIgnoreCase));
+        var minimized = config.StartMinimized ||
+                        e.Args.Any(a => a.Equals("--minimized", StringComparison.OrdinalIgnoreCase));
 
         _window = new MainWindow(_engine);
         CreateTrayIcon();

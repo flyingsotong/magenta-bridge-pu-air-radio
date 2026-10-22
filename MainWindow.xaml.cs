@@ -461,6 +461,7 @@ public partial class MainWindow : Window
 
             DimWhenDownBox.IsChecked = cfg.Display.DimWhenSimDisconnected;
             ClockBox.IsChecked = cfg.Display.ShowClockWhenIdle;
+            StartMinimizedBox.IsChecked = cfg.StartMinimized;
             SwapBox.IsChecked = cfg.Tuning.SwapOnPush;
             FastSpinBox.IsChecked = cfg.Tuning.FastSpin;
 
@@ -492,6 +493,13 @@ public partial class MainWindow : Window
         if (_syncingSettings) return;
         _engine.Config.Display.DisplayBrightness = (int)Math.Round(e.NewValue);
         DisplayBrightnessValue.Text = _engine.Config.Display.DisplayBrightness.ToString();
+    }
+
+    private void OnStartMinimizedChanged(object sender, RoutedEventArgs e)
+    {
+        if (_syncingSettings) return;
+        _engine.Config.StartMinimized = StartMinimizedBox.IsChecked == true;
+        SaveConfig();
     }
 
     private void OnClockChanged(object sender, RoutedEventArgs e)

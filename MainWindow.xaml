@@ -463,6 +463,9 @@
               <Button x:Name="StartupButton" Content="Off" Click="OnToggleStartup"
                       HorizontalAlignment="Right" Padding="12,5" />
             </Grid>
+            <CheckBox x:Name="StartMinimizedBox" Style="{StaticResource Toggle}" Margin="0,0,0,10"
+                      Content="Open minimised to the tray" Checked="OnStartMinimizedChanged"
+                      Unchecked="OnStartMinimizedChanged" />
             <Grid Margin="0,0,0,8">
               <TextBlock Text="ALWAYS ON TOP" FontSize="10"
                          Foreground="{DynamicResource Brush.Muted}" VerticalAlignment="Center" />
@@ -475,7 +478,7 @@
               <Button x:Name="ThemeButton" Content="Dark" Click="OnToggleTheme"
                       HorizontalAlignment="Right" Padding="12,5" />
             </Grid>
-            <TextBlock Text="Launches minimised to the tray and waits for the panel."
+            <TextBlock Text="Start with Windows launches straight to the tray. The checkbox applies to any launch."
                        FontSize="9" Foreground="{DynamicResource Brush.Dim}" TextWrapping="Wrap" />
 
             <Border Height="1" Background="{DynamicResource Brush.Stroke}" Margin="0,16,0,0" />

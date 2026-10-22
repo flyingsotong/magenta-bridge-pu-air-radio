@@ -75,6 +75,10 @@ public sealed class AppConfig
 
     public bool AlwaysOnTop { get; set; }
 
+    /// <summary>Open straight to the tray instead of showing the window. Applies to every
+    /// launch, including the Start menu; the tray icon brings the window back.</summary>
+    public bool StartMinimized { get; set; }
+
     /// <summary>True once the first-run welcome card has been dismissed.</summary>
     public bool WelcomeDismissed { get; set; }
 
