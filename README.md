@@ -1,5 +1,7 @@
 # Magenta Bridge for PU Air Radio
 
+<img src="docs/clock-idle.png" width="820" alt="Magenta Bridge showing the panel clock: local time 16.03 and Zulu 08.03 on the top row, 22.10 dates below, with the radio connected and MSFS not running">
+
 An independent Windows client for the **PU Radio** panel in Microsoft Flight Simulator 2024.
 Free, MIT, no telemetry, no MobiFlight, no vendor plug-in.
 
@@ -9,16 +11,23 @@ the truth about what is connected.
 
 ```
 COM1 active 133.800  standby 132.850
-COM2 active 124.850  standby 124.700
+COM2 active 124.850  standby 124.725
 ```
+
+**[Download for Windows](https://github.com/flyingsotong/magenta-bridge-pu-air-radio/releases/latest)** ·
+[Product page](https://magentadebrief.com/magenta-bridge-pu-air-radio/) ·
+[The panel review](https://magentadebrief.com/pu-air-korea-radio-review/)
 
 ## Why
 
-PU CONNECT works, but its radio side has three habits that make it unpleasant to fly with:
+PU CONNECT covers the radio, and it is the vendor's supported client. Three things about its radio
+side are still worth fixing:
 
-- Turning the brightness down to zero blacks the whole panel out with no explanation.
-- Encoder clicks go missing, so the frequency skips.
-- The app is a wall of unrelated product tabs, and the radio page is a settings dialog, not a radio.
+- Turning the brightness down to zero leaves the digits lit but unreadable, so the panel looks dead
+  with no explanation
+- Encoder clicks go missing, so the frequency skips
+- The app is a wall of unrelated product tabs, and the radio page is a settings dialog rather than
+  a radio
 
 This does the radio only, and it does it the way a radio head should behave.
 
@@ -37,15 +46,18 @@ This does the radio only, and it does it the way a radio head should behave.
 
 It is self-contained - no .NET runtime to install, no driver, no SimConnect redistributable.
 
+Close PU CONNECT while it runs. The panel's serial port takes one program, and the window says
+which one has it and offers a **Close PU CONNECT** button rather than closing it silently.
+
 ### First launch
 
 The panel keeps its selected COM/NAV mode inside its own firmware and only reports it when a
-control changes. So the first touch after a launch is what tells the bridge which side is COM and
-which is NAV. Until then the window says **PRESS A PANEL KEY** and the panel shows dim zeros
-rather than the vendor's 123.xx demo pattern. Turn a knob or rock a switch once.
+control changes. Until you touch something, nothing on the wire says which row is COM and there
+are no frequencies to show, so the panel runs its clock and the window says **PRESS A PANEL KEY**.
 
-After that the panel's mode switches drive the mode: the app follows the hardware, never the
-other way round.
+Turn a knob or rock a switch once. After that the panel's mode switches drive the mode: the app
+follows the hardware, never the other way round. The clock comes back whenever the sim is not
+running.
 
 ### If MSFS lists the panel as a game controller
 
@@ -74,6 +86,10 @@ window shows the whole frequency; both agree.
 
 ## Settings
 
+<img src="docs/settings-light.png" width="440" alt="Magenta Bridge settings in light mode: text and numeric brightness, the panel clock switched on, dim zeros on, knob push and faster spin on, start with Windows on, open minimised off, light theme, and the resolved SimConnect client with the config path">
+
+
+
 - **Text brightness** and **numeric brightness** - the two brightness fields the firmware takes.
   Both are remembered.
 - **Show local and Zulu time when idle** - uses the panel as a clock before the sim connects, in
@@ -84,7 +100,7 @@ window shows the whole frequency; both agree.
   nothing.
 - **Faster spin, more than one step per detent** - off by default. One click is one step; turning
   it on lets a fast spin cover more ground, at the cost of precision.
-- **Start with Windows**, **Always on top**, **Theme**.
+- **Start with Windows**, **Always on top**, **Open minimised to the tray**, **Theme**.
 
 `Esc` hides to the tray. `Ctrl+L` copies the log. The tray icon has the same actions as the window.
 
@@ -158,13 +174,22 @@ RADIO,<textBrightness>,<act1>,<stb1>,<act2>,<stb2>,<o1>,<o2>,<numericBrightness>
 twenty mapped events (whole/fraction step and transfer for four radios). The client DLL is
 discovered from the sim's own install rather than shipped.
 
+## The Magenta Bridge family
+
+This is the second client. The first is
+[Magenta Bridge for Octavi IFR-1](https://github.com/flyingsotong/magenta-bridge-octavi-ifr1),
+which does the same job for Octavi's panel and has its own
+[page](https://magentadebrief.com/magenta-bridge/). Both are free, MIT, and built at my own desk
+for the panels I fly with.
+
 ## Uninstall
 
 Close the app from the tray, delete its folder, then remove the startup entry if you enabled it
 (`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, value `Magenta Bridge (PU Air Radio)`) and
 the settings at `%APPDATA%\MagentaBridge\PuAirRadio`.
 
-## Licence
+## License
 
-MIT. Not affiliated with PU AIR KOREA. PU Radio is their product; this is an independent client
-written against its observable behaviour.
+MIT. Not affiliated with PU AIR KOREA and not endorsed by them. PU Radio is their product; this is
+an independent client written against its observable behaviour. PU CONNECT remains the vendor's
+supported software.
