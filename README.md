@@ -46,7 +46,7 @@ still see it. That setting lives in this client's own settings, and both fields 
 It is self-contained - no .NET runtime to install, no driver, no SimConnect redistributable.
 
 Close PU CONNECT while it runs. The panel's serial port takes one program, and the window says
-which one has it and offers a **Close PU CONNECT** button rather than closing it silently.
+which one has it and offers a **Close PU CONNECT** button. Nothing closes unless you press it.
 
 ### First launch
 
