@@ -18,17 +18,15 @@ COM2 active 124.850  standby 124.725
 
 ## Why
 
-The panel presents itself to Windows as two devices on one cable: a game controller carrying every
-switch and ring, and a serial port driving the four displays. Anything can read the inputs, while
-the displays take one program at a time.
+PU CONNECT is PU Air Korea's own app, and it runs the radio. This one does the radio only, in a
+window of its own.
 
-PU CONNECT covers the radio, and this was written against a panel behaving exactly as PU CONNECT
-leaves it. What is different here is the shape of the client: the radio only, both rows in one
-window the way a radio head shows them, and the state of each link named when something is wrong.
+The panel's four digits show what the aircraft is tuned to, so you can read a frequency without
+looking up at the screen. When the sim is closed, the panel becomes a clock.
 
-One detail is worth knowing before taking a panel apart. PU CONNECT stores the digit brightness,
-and at zero the digits become unreadable, so the panel looks dead while Windows and the sim both
-still see it. That setting lives in this client's own settings, and both fields are remembered.
+One thing is worth knowing. PU CONNECT keeps the display brightness as a setting, and if it ends
+up at zero the digits go invisible while the panel is still working. If your panel ever goes dark,
+check that setting before you take it apart.
 
 ## Requirements
 
