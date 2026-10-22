@@ -24,8 +24,13 @@ public sealed class DisplayOptions
     public int DisplayBrightness { get; set; } = 5;
 
     /// <summary>Dim the panel's digits while the sim is not running, rather than leaving
-    /// the last frequencies at full brightness as if they were live.</summary>
+    /// the last frequencies at full brightness as if they were live. Only applies when the
+    /// idle clock is switched off, since a clock is content and should be readable.</summary>
     public bool DimWhenSimDisconnected { get; set; } = true;
+
+    /// <summary>Show local and Zulu time on the panel whenever there are no live
+    /// frequencies to show: before the sim connects, in the menus, and after it quits.</summary>
+    public bool ShowClockWhenIdle { get; set; } = true;
 }
 
 public sealed class TuningOptions

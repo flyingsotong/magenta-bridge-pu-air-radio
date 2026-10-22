@@ -139,9 +139,9 @@
                 <ColumnDefinition Width="26" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
-              <TextBlock Grid.Column="1" Text="ACTIVE 1" FontSize="8" Foreground="{DynamicResource Brush.Dim}"
+              <TextBlock x:Name="Header1A" Grid.Column="1" Text="ACTIVE 1" FontSize="8" Foreground="{DynamicResource Brush.Dim}"
                          Margin="3,0,0,4" />
-              <TextBlock Grid.Column="3" Text="STBY 1" FontSize="8" Foreground="{DynamicResource Brush.Dim}"
+              <TextBlock x:Name="Header1B" Grid.Column="3" Text="STBY 1" FontSize="8" Foreground="{DynamicResource Brush.Dim}"
                          Margin="3,0,0,4" />
             </Grid>
 
@@ -183,7 +183,7 @@
                            VerticalAlignment="Center" />
               </Border>
 
-              <TextBlock Grid.Column="2" Text=">" FontSize="11" HorizontalAlignment="Center"
+              <TextBlock x:Name="Arrow1" Grid.Column="2" Text=">" FontSize="11" HorizontalAlignment="Center"
                          VerticalAlignment="Center" Foreground="{DynamicResource Brush.Accent}" />
 
               <Border Grid.Column="3" Background="{DynamicResource Brush.Window}" CornerRadius="9" Padding="10,4,12,5">
@@ -200,9 +200,9 @@
                 <ColumnDefinition Width="26" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
-              <TextBlock Grid.Column="1" Text="ACTIVE 2" FontSize="8" Foreground="{DynamicResource Brush.Dim}"
+              <TextBlock x:Name="Header2A" Grid.Column="1" Text="ACTIVE 2" FontSize="8" Foreground="{DynamicResource Brush.Dim}"
                          Margin="3,0,0,4" />
-              <TextBlock Grid.Column="3" Text="STBY 2" FontSize="8" Foreground="{DynamicResource Brush.Dim}"
+              <TextBlock x:Name="Header2B" Grid.Column="3" Text="STBY 2" FontSize="8" Foreground="{DynamicResource Brush.Dim}"
                          Margin="3,0,0,4" />
             </Grid>
 
@@ -244,7 +244,7 @@
                            VerticalAlignment="Center" />
               </Border>
 
-              <TextBlock Grid.Column="2" Text=">" FontSize="11" HorizontalAlignment="Center"
+              <TextBlock x:Name="Arrow2" Grid.Column="2" Text=">" FontSize="11" HorizontalAlignment="Center"
                          VerticalAlignment="Center" Foreground="{DynamicResource Brush.Accent}" />
 
               <Border Grid.Column="3" Background="{DynamicResource Brush.Window}" CornerRadius="9" Padding="10,4,12,5">
@@ -434,8 +434,14 @@
             <TextBlock Text="The first value lights the printed labels; the second lights the numeric digits. Tune each to taste - both are remembered."
                        FontSize="9" Foreground="{DynamicResource Brush.Dim}" TextWrapping="Wrap" Margin="0,0,0,10" />
 
-            <CheckBox x:Name="DimWhenDownBox" Style="{StaticResource Toggle}" Margin="0,4,0,8"
-                      Content="Dim the digits while MSFS is not running" Checked="OnDimWhenDownChanged"
+            <CheckBox x:Name="ClockBox" Style="{StaticResource Toggle}" Margin="0,4,0,6"
+                      Content="Show local and Zulu time on the panel when there is nothing to show"
+                      Checked="OnClockChanged" Unchecked="OnClockChanged" />
+            <TextBlock Text="Top row: local time and Zulu time. Bottom row: the two dates. The spare digit is fixed at zero because the panel cannot blank a position."
+                       FontSize="9" Foreground="{DynamicResource Brush.Dim}" TextWrapping="Wrap" Margin="0,0,0,10" />
+
+            <CheckBox x:Name="DimWhenDownBox" Style="{StaticResource Toggle}" Margin="0,0,0,4"
+                      Content="Dim the zeros when the clock is off" Checked="OnDimWhenDownChanged"
                       Unchecked="OnDimWhenDownChanged" />
 
             <Border Height="1" Background="{DynamicResource Brush.Stroke}" Margin="0,12,0,0" />

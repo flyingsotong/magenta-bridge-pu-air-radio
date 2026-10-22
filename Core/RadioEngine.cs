@@ -659,19 +659,14 @@ public sealed class RadioEngine : IDisposable
     /// </summary>
     private string? BuildFrame()
     {
-        var brightnessNow = _config.Display.PanelBrightness;
-        var displayBrightnessNow = _config.Display.DisplayBrightness;
+        var brightness = _config.Display.PanelBrightness;
+        var displayBrightness = _config.Display.DisplayBrightness;
 
-        if (!State.ModesKnown)
-        {
-            // The panel keeps its mode to itself until the first input after a power cycle.
-            // Rather than leave it showing its own 123.xx demo, put up an honest idle frame:
-            // zeros, at the brightness the user chose, until a control reports the mode.
-            return $"RADIO,{brightnessNow},0,0,0,0,11,21,{displayBrightnessNow}\n";
-        }
-
-        var simUp = State.SimConnected;
-        if (simUp && !State.RadioDataReceived) return null;
+        // Anything that is not live frequency data gets the idle frame: before the sim starts,
+        // in the menus, after it quits, and before the panel has reported its mode after a
+        // power cycle. That is where the clock lives.
+        if (!State.ModesKnown || !State.SimConnected || !State.RadioDataReceived)
+            return BuildIdleFrame(brightness, displayBrightness);
 
         double a1, s1, a2, s2;
         lock (_gate)
@@ -687,25 +682,43 @@ public sealed class RadioEngine : IDisposable
         var opt1 = State.Side1 == SideMode.Nav ? "10" : "11";
         var opt2 = State.Side2 == SideMode.Nav ? "20" : "21";
 
-        var brightness = brightnessNow;
-        var displayBrightness = displayBrightnessNow;
+        return $"RADIO,{brightness},{Khz(a1)},{Khz(s1)},{Khz(a2)},{Khz(s2)},{opt1},{opt2},{displayBrightness}\n";
+    }
 
-        if (!simUp)
+    /// <summary>
+    /// The idle frame: local time, Zulu time, local date, Zulu date. The panel's COM format is
+    /// two integer digits and three decimals, so a clock reads as HH.MM0 - the spare digit is
+    /// forced to zero because the hardware has no way to blank a position.
+    /// </summary>
+    private string BuildIdleFrame(int brightness, int displayBrightness)
+    {
+        if (!_config.Display.ShowClockWhenIdle)
         {
             // A radio head with no data shows zeros, not the last frequency it heard.
-            // Brightness 0 does not switch the digits off, so the honest idle state is a
-            // dim zero rather than a dark panel that still reports numbers.
-            a1 = s1 = a2 = s2 = 0;
-
+            // Brightness 0 does not switch the digits off, so a dim zero is the honest idle
+            // state when the clock is switched off.
             if (_config.Display.DimWhenSimDisconnected)
             {
                 brightness = Math.Min(brightness, 25);
                 displayBrightness = Math.Min(displayBrightness, 5);
             }
+
+            return $"RADIO,{brightness},0,0,0,0,11,21,{displayBrightness}\n";
         }
 
-        return $"RADIO,{brightness},{Khz(a1)},{Khz(s1)},{Khz(a2)},{Khz(s2)},{opt1},{opt2},{displayBrightness}\n";
+        var local = DateTime.Now;
+        var zulu = DateTime.UtcNow;
+
+        return $"RADIO,{brightness}," +
+               $"{ClockValue(local)},{ClockValue(zulu)},{DateValue(local)},{DateValue(zulu)},11,21," +
+               $"{displayBrightness}\n";
     }
+
+    /// <summary>HH.MM as the panel will render it: hours x1000 + minutes x10, spare digit zero.</summary>
+    public static int ClockValue(DateTime time) => time.Hour * 1000 + time.Minute * 10;
+
+    /// <summary>DD.MM as the panel will render it, spare digit zero.</summary>
+    public static int DateValue(DateTime time) => time.Day * 1000 + time.Month * 10;
 
     private static int Khz(double mhz)
     {

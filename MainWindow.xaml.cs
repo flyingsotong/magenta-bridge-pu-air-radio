@@ -153,14 +153,45 @@ public partial class MainWindow : Window
 
         var hasData = s.SimConnected && s.RadioDataReceived;
 
-        SetReadout(Side1Active, s.Side1, hasData,
-            s.Side1 == SideMode.Nav ? s.Nav1Active : s.Com1Active);
-        SetReadout(Side1Standby, s.Side1, hasData,
-            s.Side1 == SideMode.Nav ? s.Nav1Standby : s.Com1Standby);
-        SetReadout(Side2Active, s.Side2, hasData,
-            s.Side2 == SideMode.Nav ? s.Nav2Active : s.Com2Active);
-        SetReadout(Side2Standby, s.Side2, hasData,
-            s.Side2 == SideMode.Nav ? s.Nav2Standby : s.Com2Standby);
+        // The panel shows the clock whenever there are no live frequencies, so the window
+        // mirrors that rather than showing dashes next to a panel showing a time.
+        if ((!s.ModesKnown || !hasData) && _engine.Config.Display.ShowClockWhenIdle)
+        {
+            var local = DateTime.Now;
+            var zulu = DateTime.UtcNow;
+
+            Header1A.Text = "LOCAL TIME";
+            Header1B.Text = "ZULU TIME";
+            Header2A.Text = "LOCAL DATE";
+            Header2B.Text = "ZULU DATE";
+
+            SetClockReadout(Side1Active, RadioEngine.ClockValue(local));
+            SetClockReadout(Side1Standby, RadioEngine.ClockValue(zulu));
+            SetClockReadout(Side2Active, RadioEngine.DateValue(local));
+            SetClockReadout(Side2Standby, RadioEngine.DateValue(zulu));
+
+            Arrow1.Visibility = Visibility.Collapsed;
+            Arrow2.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            Header1A.Text = "ACTIVE 1";
+            Header1B.Text = "STBY 1";
+            Header2A.Text = "ACTIVE 2";
+            Header2B.Text = "STBY 2";
+
+            Arrow1.Visibility = Visibility.Visible;
+            Arrow2.Visibility = Visibility.Visible;
+
+            SetReadout(Side1Active, s.Side1, hasData,
+                s.Side1 == SideMode.Nav ? s.Nav1Active : s.Com1Active);
+            SetReadout(Side1Standby, s.Side1, hasData,
+                s.Side1 == SideMode.Nav ? s.Nav1Standby : s.Com1Standby);
+            SetReadout(Side2Active, s.Side2, hasData,
+                s.Side2 == SideMode.Nav ? s.Nav2Active : s.Com2Active);
+            SetReadout(Side2Standby, s.Side2, hasData,
+                s.Side2 == SideMode.Nav ? s.Nav2Standby : s.Com2Standby);
+        }
 
         SetPill(1, s.Side1);
         SetPill(2, s.Side2);
@@ -222,6 +253,15 @@ public partial class MainWindow : Window
         _ => "-",
     };
 
+    /// <summary>The panel renders a value as two integer digits and three decimals.</summary>
+    private static string ClockDigits(int value) =>
+        (value / 1000.0).ToString("00.000", CultureInfo.InvariantCulture);
+
+    private void SetClockReadout(TextBlock target, int value)
+    {
+        target.Text = ClockDigits(value);
+        target.Foreground = (Brush)FindResource("Brush.Text");
+    }
     private void SetReadout(TextBlock target, SideMode mode, bool hasData, double mhz)
     {
         if (!hasData || mode == SideMode.Unknown || mhz <= 0)
@@ -420,6 +460,7 @@ public partial class MainWindow : Window
             DisplayBrightnessValue.Text = cfg.Display.DisplayBrightness.ToString();
 
             DimWhenDownBox.IsChecked = cfg.Display.DimWhenSimDisconnected;
+            ClockBox.IsChecked = cfg.Display.ShowClockWhenIdle;
             SwapBox.IsChecked = cfg.Tuning.SwapOnPush;
             FastSpinBox.IsChecked = cfg.Tuning.FastSpin;
 
@@ -451,6 +492,13 @@ public partial class MainWindow : Window
         if (_syncingSettings) return;
         _engine.Config.Display.DisplayBrightness = (int)Math.Round(e.NewValue);
         DisplayBrightnessValue.Text = _engine.Config.Display.DisplayBrightness.ToString();
+    }
+
+    private void OnClockChanged(object sender, RoutedEventArgs e)
+    {
+        if (_syncingSettings) return;
+        _engine.Config.Display.ShowClockWhenIdle = ClockBox.IsChecked == true;
+        Refresh();
     }
 
     private void OnDimWhenDownChanged(object sender, RoutedEventArgs e)

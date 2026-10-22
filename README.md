@@ -76,7 +76,10 @@ window shows the whole frequency; both agree.
 
 - **Text brightness** and **numeric brightness** - the two brightness fields the firmware takes.
   Both are remembered.
-- **Dim the digits while MSFS is not running** - shows dim zeros instead of the last frequencies.
+- **Show local and Zulu time when idle** - uses the panel as a clock before the sim connects, in
+  the menus, and after it quits. The panel's five-digit fields make it read as `11.100` for 11:10;
+  the spare digit is fixed at zero because the hardware cannot blank a position.
+- **Dim the zeros when the clock is off** - only applies if the clock is switched off.
 - **Knob push transfers active and standby** - turn it off if you would rather the push did
   nothing.
 - **Faster spin, more than one step per detent** - off by default. One click is one step; turning
@@ -90,6 +93,7 @@ window shows the whole frequency; both agree.
 - COM1/COM2 and NAV1/NAV2 tuning and transfers
 - Live active and standby frequencies on the panel and in the window
 - COM/NAV mode follows the panel's own switches
+- A clock on the panel whenever there is nothing to show: local and Zulu time on the top row, the two dates on the bottom
 - Display brightness, remembered per user
 - Auto-reconnect: unplug and replug the panel, start or quit MSFS, and it picks up again
 - Honest states: dashes when there is no data, the reason in the window when something is wrong
@@ -108,6 +112,9 @@ window shows the whole frequency; both agree.
 - **8.33 kHz spacing depends on the aircraft.** The display handles three decimals; the tuning
   events are the sim's, so whether you can reach an 8.33 channel is the aircraft's decision.
 - **One panel at a time.** Two PU Radios on one PC is not supported.
+- **The clock has one spare digit per field.** Local and Zulu time read as HH.MM with a trailing
+  zero (`11.100` for 11:10), and the dates as DD.MM with the same. The panel has no way to blank a
+  digit position, so this is the closest a five-digit radio display gets to a clock.
 
 ## How it works
 
