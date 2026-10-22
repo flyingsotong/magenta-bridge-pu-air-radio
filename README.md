@@ -5,9 +5,7 @@
 An independent Windows client for the **PU Radio** panel in Microsoft Flight Simulator 2024.
 Free, MIT, no telemetry, no MobiFlight, no vendor plug-in.
 
-It replaces PU CONNECT's radio page with three things done properly: the panel's knobs tune the
-sim directly, the panel's four readouts show what the sim actually has, and the window tells you
-the truth about what is connected.
+It does the radio, in one window of its own: the panel's knobs tune the sim, the four readouts show what the sim actually has, and the window says what is connected.
 
 ```
 COM1 active 133.800  standby 132.850
@@ -20,16 +18,17 @@ COM2 active 124.850  standby 124.725
 
 ## Why
 
-PU CONNECT covers the radio, and it is the vendor's supported client. Three things about its radio
-side are still worth fixing:
+The panel presents itself to Windows as two devices on one cable: a game controller carrying every
+switch and ring, and a serial port driving the four displays. Anything can read the inputs, while
+the displays take one program at a time.
 
-- Turning the brightness down to zero leaves the digits lit but unreadable, so the panel looks dead
-  with no explanation
-- Encoder clicks go missing, so the frequency skips
-- The app is a wall of unrelated product tabs, and the radio page is a settings dialog rather than
-  a radio
+PU CONNECT covers the radio, and this was written against a panel behaving exactly as PU CONNECT
+leaves it. What is different here is the shape of the client: the radio only, both rows in one
+window the way a radio head shows them, and the state of each link named when something is wrong.
 
-This does the radio only, and it does it the way a radio head should behave.
+One detail is worth knowing before taking a panel apart. PU CONNECT stores the digit brightness,
+and at zero the digits become unreadable, so the panel looks dead while Windows and the sim both
+still see it. That setting lives in this client's own settings, and both fields are remembered.
 
 ## Requirements
 
@@ -120,7 +119,7 @@ window shows the whole frequency; both agree.
 - **The panel's own scanning misses inputs.** An independent HID capture, with no bridge running,
   saw roughly half the detents from a brisk turn. Light taps and fast flicks can be lost, and the
   knob push sometimes needs a deliberate half-second press. This is the panel's firmware, not the
-  bridge; the vendor software has the same behaviour. Turn deliberately.
+  bridge; PU CONNECT loses the same ones. Turn deliberately.
 - **Aircraft that do not use the standard radio events will not respond.** The bridge sends the
   standard COM/NAV SimConnect events that default aircraft and most add-ons honour. A study-level
   airliner with its own radio management panel may ignore them; nothing short of a WASM module can
@@ -153,7 +152,7 @@ endian, usage *n* at bit *n-1*:
 The mode bits are state, not presses. The rocker's contacts bounce for up to a second, so the mode
 is only believed after 220 ms of stability. The encoder frequently reports a moment with both
 direction bits set as the wiper crosses the midpoint; counting both cancels the click, which is
-the "skipping" the vendor app shows. A ring therefore counts at most one step per press and waits
+where skipped tuning comes from. A ring therefore counts at most one step per press and waits
 for an ambiguous report to resolve.
 
 **Serial output.** The display is driven over the panel's CDC port at 9600 8N1, one line, every
@@ -176,11 +175,10 @@ discovered from the sim's own install rather than shipped.
 
 ## The Magenta Bridge family
 
-This is the second client. The first is
-[Magenta Bridge for Octavi IFR-1](https://github.com/flyingsotong/magenta-bridge-octavi-ifr1),
-which does the same job for Octavi's panel and has its own
-[page](https://magentadebrief.com/magenta-bridge/). Both are free, MIT, and built at my own desk
-for the panels I fly with.
+[Magenta Bridge for Octavi IFR-1](https://github.com/flyingsotong/magenta-bridge-octavi-ifr1) does
+the same job for Octavi's panel and has its own
+[page](https://magentadebrief.com/magenta-bridge/). This build is the second client, made at my
+own desk for the panels I fly with. Both are free and MIT.
 
 ## Uninstall
 
