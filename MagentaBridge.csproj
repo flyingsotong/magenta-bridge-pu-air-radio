@@ -13,8 +13,8 @@
     <AssemblyTitle>Magenta Bridge for PU Air Radio</AssemblyTitle>
     <Product>Magenta Bridge for PU Air Radio</Product>
     <Company>Local</Company>
-    <Version>0.1.0</Version>
-    <FileVersion>0.1.0.0</FileVersion>
+    <Version>0.2.0</Version>
+    <FileVersion>0.2.0.0</FileVersion>
     <Description>A free client for the PU Air Radio panel in Microsoft Flight Simulator 2024</Description>
     <ApplicationIcon>assets\magenta-bridge.ico</ApplicationIcon>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>

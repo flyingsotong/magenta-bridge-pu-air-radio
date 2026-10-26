@@ -40,12 +40,13 @@ It is self-contained - no .NET runtime to install, no driver, no SimConnect redi
 ### First launch
 
 The panel keeps its selected COM/NAV mode inside its own firmware and only reports it when a
-control changes. So the first touch after a launch is what tells the bridge which side is COM and
-which is NAV. Until then the window says **PRESS A PANEL KEY** and the panel shows dim zeros
-rather than the vendor's 123.xx demo pattern. Turn a knob or rock a switch once.
+control changes. The bridge remembers where you left each row, so the window and the panel come
+up correct from the first second, marked **LAST SESSION**. The first touch confirms it, or corrects
+it if you moved a switch while the app was closed.
 
-After that the panel's mode switches drive the mode: the app follows the hardware, never the
-other way round.
+From then on the panel's mode switches drive the mode: the app follows the hardware, never the
+other way round. On a completely fresh install there is nothing to remember yet, so the window
+says **PRESS A PANEL KEY** and the panel shows the clock until you turn or rock something.
 
 ### If MSFS lists the panel as a game controller
 
@@ -94,7 +95,7 @@ window shows the whole frequency; both agree.
 
 - COM1/COM2 and NAV1/NAV2 tuning and transfers
 - Live active and standby frequencies on the panel and in the window
-- COM/NAV mode follows the panel's own switches
+- COM/NAV mode follows the panel's own switches, remembered between sessions
 - A clock on the panel whenever there is nothing to show: local and Zulu time on the top row, the two dates on the bottom
 - Display brightness, remembered per user
 - Auto-reconnect: unplug and replug the panel, start or quit MSFS, and it picks up again
