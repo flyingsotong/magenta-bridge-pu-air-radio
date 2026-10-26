@@ -457,28 +457,19 @@
             <Border Height="1" Background="{DynamicResource Brush.Stroke}" Margin="0,16,0,0" />
 
             <TextBlock Text="BRIDGE" FontSize="9" Foreground="{DynamicResource Brush.Dim}" Margin="0,16,0,6" />
-            <Grid Margin="0,0,0,8">
-              <TextBlock Text="START WITH WINDOWS" FontSize="10"
-                         Foreground="{DynamicResource Brush.Muted}" VerticalAlignment="Center" />
-              <Button x:Name="StartupButton" Content="Off" Click="OnToggleStartup"
-                      HorizontalAlignment="Right" Padding="12,5" />
-            </Grid>
+            <CheckBox x:Name="StartWithWindowsBox" Style="{StaticResource Toggle}" Margin="0,0,0,10"
+                      Content="Start with Windows" Checked="OnStartWithWindowsChanged"
+                      Unchecked="OnStartWithWindowsChanged" />
             <CheckBox x:Name="StartMinimizedBox" Style="{StaticResource Toggle}" Margin="0,0,0,10"
                       Content="Open minimised to the tray" Checked="OnStartMinimizedChanged"
                       Unchecked="OnStartMinimizedChanged" />
-            <Grid Margin="0,0,0,8">
-              <TextBlock Text="ALWAYS ON TOP" FontSize="10"
-                         Foreground="{DynamicResource Brush.Muted}" VerticalAlignment="Center" />
-              <Button x:Name="TopmostButton" Content="Off" Click="OnToggleTopmost"
-                      HorizontalAlignment="Right" Padding="12,5" />
-            </Grid>
-            <Grid Margin="0,0,0,8">
-              <TextBlock Text="THEME" FontSize="10"
-                         Foreground="{DynamicResource Brush.Muted}" VerticalAlignment="Center" />
-              <Button x:Name="ThemeButton" Content="Dark" Click="OnToggleTheme"
-                      HorizontalAlignment="Right" Padding="12,5" />
-            </Grid>
-            <TextBlock Text="Start with Windows launches straight to the tray. The checkbox applies to any launch."
+            <CheckBox x:Name="TopmostBox" Style="{StaticResource Toggle}" Margin="0,0,0,10"
+                      Content="Always on top" Checked="OnTopmostChanged"
+                      Unchecked="OnTopmostChanged" />
+            <CheckBox x:Name="DarkThemeBox" Style="{StaticResource Toggle}" Margin="0,0,0,4"
+                      Content="Dark theme" Checked="OnDarkThemeChanged"
+                      Unchecked="OnDarkThemeChanged" />
+            <TextBlock Text="Start with Windows launches straight to the tray. Open minimised applies to any launch."
                        FontSize="9" Foreground="{DynamicResource Brush.Dim}" TextWrapping="Wrap" />
 
             <Border Height="1" Background="{DynamicResource Brush.Stroke}" Margin="0,16,0,0" />

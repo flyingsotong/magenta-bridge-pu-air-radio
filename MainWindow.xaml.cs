@@ -35,6 +35,9 @@ public partial class MainWindow : Window
         _engine.Changed += OnEngineChanged;
         Log.Line += OnLogLine;
 
+        // The saved choice has to reach the window itself, not just the checkbox.
+        Topmost = _engine.Config.AlwaysOnTop;
+
         SyncSettingsFromConfig();
         BuildSelfTestRows();
         ApplyLockup();
@@ -465,9 +468,10 @@ public partial class MainWindow : Window
             SwapBox.IsChecked = cfg.Tuning.SwapOnPush;
             FastSpinBox.IsChecked = cfg.Tuning.FastSpin;
 
-            StartupButton.Content = Core.Startup.IsEnabled ? "On" : "Off";
-            TopmostButton.Content = Topmost ? "On" : "Off";
-            ThemeButton.Content = cfg.Theme == "light" ? "Light" : cfg.Theme == "dark" ? "Dark" : "System";
+            StartWithWindowsBox.IsChecked = Core.Startup.IsEnabled;
+            TopmostBox.IsChecked = Topmost;
+            DarkThemeBox.IsChecked = cfg.Theme == "dark" ||
+                                     (cfg.Theme != "light" && !Dwm.IsLightTheme());
 
             SettingsConfigText.Text = "Config: " + cfg.Path;
             SettingsVersionText.Text = VersionText.Text;
@@ -527,35 +531,38 @@ public partial class MainWindow : Window
         _engine.Config.Tuning.FastSpin = FastSpinBox.IsChecked == true;
     }
 
-    private void OnToggleStartup(object sender, RoutedEventArgs e)
+    private void OnStartWithWindowsChanged(object sender, RoutedEventArgs e)
     {
-        var want = !Core.Startup.IsEnabled;
-        if (!Core.Startup.Apply(want)) return;
+        if (_syncingSettings) return;
+
+        var want = StartWithWindowsBox.IsChecked == true;
+        if (want != Core.Startup.IsEnabled && !Core.Startup.Apply(want))
+        {
+            // Registry refused the change: put the box back where the system actually is.
+            _syncingSettings = true;
+            StartWithWindowsBox.IsChecked = Core.Startup.IsEnabled;
+            _syncingSettings = false;
+            return;
+        }
 
         _engine.Config.StartWithWindows = want;
-        StartupButton.Content = Core.Startup.IsEnabled ? "On" : "Off";
         SaveConfig();
     }
 
-    private void OnToggleTopmost(object sender, RoutedEventArgs e)
+    private void OnTopmostChanged(object sender, RoutedEventArgs e)
     {
-        Topmost = !Topmost;
+        if (_syncingSettings) return;
+
+        Topmost = TopmostBox.IsChecked == true;
         _engine.Config.AlwaysOnTop = Topmost;
-        TopmostButton.Content = Topmost ? "On" : "Off";
         SaveConfig();
     }
 
-    private void OnToggleTheme(object sender, RoutedEventArgs e)
+    private void OnDarkThemeChanged(object sender, RoutedEventArgs e)
     {
-        var cfg = _engine.Config;
-        cfg.Theme = cfg.Theme switch
-        {
-            "light" => "dark",
-            "dark" => "light",
-            _ => Dwm.IsLightTheme() ? "dark" : "light",
-        };
+        if (_syncingSettings) return;
 
-        ThemeButton.Content = cfg.Theme == "light" ? "Light" : "Dark";
+        _engine.Config.Theme = DarkThemeBox.IsChecked == true ? "dark" : "light";
         ((App)Application.Current).ReapplyTheme();
         ApplyWin11Frame();
         ApplyLockup();

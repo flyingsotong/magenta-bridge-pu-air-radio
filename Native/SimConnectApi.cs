@@ -95,18 +95,18 @@ public sealed class SimConnectApi : IDisposable
         if (sdk.Length > 0)
             list.Add(Path.Combine(sdk, "SimConnect SDK", "lib", "SimConnect.dll"));
 
-        // 3. The sim's own content folder (both 2020 and 2024 layouts).
-        foreach (var root in new[] { "D:\\XboxGames", "C:\\XboxGames", "C:\\Program Files\\WindowsApps" })
+        // 3. The sim's own content folder on whichever drive it was installed to.
+        foreach (var root in SimInstallRoots())
         {
             if (!Directory.Exists(root)) continue;
             list.Add(Path.Combine(root, "Microsoft Flight Simulator 2024", "Content", "SimConnect.dll"));
             list.Add(Path.Combine(root, "Microsoft Flight Simulator", "SimConnect.dll"));
         }
 
-        // 3. The sim's own client, matched to the installed build. MSFS 2024 ships it as
-        //    SimConnect_internal.dll; it exposes the full client API *plus* the Input
-        //    Events (B-event) API that the 2020 redistributable lacks. Newest wins.
-        foreach (var root in new[] { "D:\\XboxGames", "C:\\XboxGames" })
+        // 3b. The sim's own client, matched to the installed build. MSFS 2024 ships it as
+        //     SimConnect_internal.dll; it exposes the full client API *plus* the Input
+        //     Events (B-event) API that the 2020 redistributable lacks. Newest wins.
+        foreach (var root in SimInstallRoots())
         {
             if (!Directory.Exists(root)) continue;
             foreach (var sim in new[] { "Microsoft Flight Simulator 2024", "Microsoft Flight Simulator" })
@@ -126,6 +126,33 @@ public sealed class SimConnectApi : IDisposable
         list.Add(@"C:\Program Files\Octavi\SimConnect.dll");
 
         return list.Where(p => !string.IsNullOrWhiteSpace(p)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    /// <summary>
+    /// Candidate MSFS install roots, discovered rather than hard-coded: the Xbox app puts
+    /// the game under a folder named "Xbox" ("XboxGames" on older installs) on whichever
+    /// drive the user picked, so sweeping drive roots survives an install being moved.
+    /// </summary>
+    private static IReadOnlyList<string> SimInstallRoots()
+    {
+        var roots = new List<string>();
+        foreach (var drive in DriveInfo.GetDrives())
+        {
+            try
+            {
+                if (drive.DriveType != DriveType.Fixed || !drive.IsReady) continue;
+                foreach (var name in new[] { "Xbox", "XboxGames" })
+                {
+                    var root = Path.Combine(drive.RootDirectory.FullName, name);
+                    if (Directory.Exists(root)) roots.Add(root);
+                }
+            }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+        }
+
+        roots.Add(@"C:\Program Files\WindowsApps");
+        return roots;
     }
 
     public bool Load(SimConnectOptions options)

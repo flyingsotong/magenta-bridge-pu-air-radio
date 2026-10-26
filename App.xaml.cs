@@ -264,8 +264,9 @@ public partial class App : Application
                             _window.Show();
                             _window.WindowState = WindowState.Normal;
                             _window.Activate();
+                            // Force the raise, then restore whatever the user chose.
                             _window.Topmost = true;
-                            _window.Topmost = false;
+                            _window.Topmost = _engine!.Config.AlwaysOnTop;
                         }
                         catch (Exception ex)
                         {

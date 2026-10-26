@@ -385,7 +385,11 @@ public sealed class RadioEngine : IDisposable
         if (label.Length == 0) return;
 
         var multiplier = Multiplier(usage);
-        var side = usage >= UsageKhzDown2 ? 2 : 1;
+        // Side by explicit usage, not by number: the bottom knob push is usage 6, which
+        // sorts below the bottom rings (11-14) and would otherwise act on side 1.
+        var side = usage is UsageCom2 or UsageNav2 or UsageSwap2
+            or UsageKhzDown2 or UsageKhzUp2 or UsageMhzDown2 or UsageMhzUp2
+            ? 2 : 1;
 
         // Before the rocker has settled there is still a freshly decoded position, which is
         // the truthful one for an action that arrives with it in the same report.
