@@ -148,6 +148,12 @@ public partial class MainWindow : Window
             SyncText.Text = "PRESS A PANEL KEY";
             SyncText.Foreground = (Brush)FindResource("Brush.Warn");
         }
+        else if (s.ModesAssumed)
+        {
+            // Remembered from the last session, not read from the panel yet.
+            SyncText.Text = $"{SideLabel(1, s.Side1)}  +  {SideLabel(2, s.Side2)}  \u00b7  LAST SESSION";
+            SyncText.Foreground = (Brush)FindResource("Brush.Dim");
+        }
         else
         {
             SyncText.Text = $"{SideLabel(1, s.Side1)}  +  {SideLabel(2, s.Side2)}";
@@ -233,7 +239,7 @@ public partial class MainWindow : Window
 
         if (s.DeviceConnected && !s.ModesKnown) parts.Add("waiting for the panel's mode");
 
-        return string.Join("  ·  ", parts);
+        return string.Join("  \u00b7  ", parts);
     }
 
     private static string BuildDeviceHint(RadioState s)
@@ -326,7 +332,7 @@ public partial class MainWindow : Window
             : $"Aircraft: {s.Aircraft}";
 
         PortText.Text = s.DeviceConnected
-            ? $"HID: {s.DeviceName} {s.DeviceVersion}   ·   display: {(s.DisplayConnected ? s.ComPort : "not open")}"
+            ? $"HID: {s.DeviceName} {s.DeviceVersion}   \u00b7   display: {(s.DisplayConnected ? s.ComPort : "not open")}"
             : "HID: not found";
 
         ErrorText.Text = s.SimError;

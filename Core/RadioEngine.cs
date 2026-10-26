@@ -25,6 +25,12 @@ public sealed class RadioState
     public SideMode Side1 = SideMode.Unknown;
     public SideMode Side2 = SideMode.Unknown;
 
+    /// <summary>True when a side's mode came from the last session rather than from the
+    /// panel itself. The first report for that side clears it.</summary>
+    public bool Assumed1, Assumed2;
+
+    public bool ModesAssumed => Assumed1 || Assumed2;
+
     public double Com1Active, Com1Standby;
     public double Com2Active, Com2Standby;
     public double Nav1Active, Nav1Standby;
@@ -190,9 +196,12 @@ public sealed class RadioEngine : IDisposable
                     _ringArmed[0] = _ringArmed[1] = _ringArmed[2] = _ringArmed[3] = true;
                 }
 
-                // A fresh session starts with an unknown mode; the panel only speaks on change.
-                State.Side1 = SideMode.Unknown;
-                State.Side2 = SideMode.Unknown;
+                // The panel only speaks on change, so start from the last session's mode
+                // where there is one; it is marked assumed until the panel reports.
+                State.Side1 = ParseMode(_config.LastMode1);
+                State.Side2 = ParseMode(_config.LastMode2);
+                State.Assumed1 = State.Side1 != SideMode.Unknown;
+                State.Assumed2 = State.Side2 != SideMode.Unknown;
 
                 connection.Start();
                 State.DeviceConnected = true;
@@ -346,20 +355,35 @@ public sealed class RadioEngine : IDisposable
         if (_raw1 != SideMode.Unknown && _raw1 != State.Side1 && now - _raw1At >= ModeSettleMs)
         {
             State.Side1 = _raw1;
+            State.Assumed1 = false;
             changed = true;
         }
 
         if (_raw2 != SideMode.Unknown && _raw2 != State.Side2 && now - _raw2At >= ModeSettleMs)
         {
             State.Side2 = _raw2;
+            State.Assumed2 = false;
             changed = true;
         }
 
         if (!changed) return;
 
-        Log.Info($"panel mode: {ModeLabel(1, State.Side1)} / {ModeLabel(2, State.Side2)}");
+        // Remember where the panel was left, so the next launch can start from it.
+        _config.LastMode1 = State.Side1 == SideMode.Nav ? "nav" : "com";
+        _config.LastMode2 = State.Side2 == SideMode.Nav ? "nav" : "com";
+        try { _config.Save(); } catch (Exception ex) { Log.Warn($"could not save the panel mode: {ex.Message}"); }
+
+        Log.Info($"panel mode: {ModeLabel(1, State.Side1)} / {ModeLabel(2, State.Side2)}" +
+                 (State.ModesAssumed ? " (assumed)" : ""));
         Raise();
     }
+
+    private static SideMode ParseMode(string saved) => saved switch
+    {
+        "com" => SideMode.Com,
+        "nav" => SideMode.Nav,
+        _ => SideMode.Unknown,
+    };
 
     private static string ModeLabel(int side, SideMode mode) => mode switch
     {

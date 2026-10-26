@@ -79,6 +79,14 @@ public sealed class AppConfig
     /// launch, including the Start menu; the tray icon brings the window back.</summary>
     public bool StartMinimized { get; set; }
 
+    /// <summary>The last COM/NAV position each row was left in ("com" or "nav"). The panel
+    /// keeps its mode in firmware and only reports it on change, so these let the display
+    /// come up right at launch instead of waiting for a touch. They are assumed, not read;
+    /// the first report corrects them.</summary>
+    public string LastMode1 { get; set; } = "";
+
+    public string LastMode2 { get; set; } = "";
+
     /// <summary>True once the first-run welcome card has been dismissed.</summary>
     public bool WelcomeDismissed { get; set; }
 
