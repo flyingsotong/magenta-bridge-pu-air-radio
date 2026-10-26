@@ -1,26 +1,32 @@
 # Magenta Bridge for PU Air Radio
 
+<img src="docs/clock-idle.png" width="820" alt="Magenta Bridge showing the panel clock: local time 16.03 and Zulu 08.03 on the top row, 22.10 dates below, with the radio connected and MSFS not running">
+
 An independent Windows client for the **PU Radio** panel in Microsoft Flight Simulator 2024.
 Free, MIT, no telemetry, no MobiFlight, no vendor plug-in.
 
-It replaces PU CONNECT's radio page with three things done properly: the panel's knobs tune the
-sim directly, the panel's four readouts show what the sim actually has, and the window tells you
-the truth about what is connected.
+It does the radio, in one window of its own: the panel's knobs tune the sim, the four readouts show what the sim actually has, and the window says what is connected.
 
 ```
 COM1 active 133.800  standby 132.850
-COM2 active 124.850  standby 124.700
+COM2 active 124.850  standby 124.725
 ```
+
+**[Download for Windows](https://github.com/flyingsotong/magenta-bridge-pu-air-radio/releases/latest)** ·
+[Product page](https://magentadebrief.com/magenta-bridge-pu-air-radio/) ·
+[The panel review](https://magentadebrief.com/pu-air-korea-radio-review/)
 
 ## Why
 
-PU CONNECT works, but its radio side has three habits that make it unpleasant to fly with:
+PU CONNECT is PU Air Korea's own app, and it runs the radio. This one does the radio only, in a
+window of its own.
 
-- Turning the brightness down to zero blacks the whole panel out with no explanation.
-- Encoder clicks go missing, so the frequency skips.
-- The app is a wall of unrelated product tabs, and the radio page is a settings dialog, not a radio.
+The panel's four digits show what the aircraft is tuned to, so you can read a frequency without
+looking up at the screen. When the sim is closed, the panel becomes a clock.
 
-This does the radio only, and it does it the way a radio head should behave.
+One thing is worth knowing. PU CONNECT keeps the display brightness as a setting, and if it ends
+up at zero the digits go invisible while the panel is still working. If your panel ever goes dark,
+check that setting before you take it apart.
 
 ## Requirements
 
@@ -37,16 +43,18 @@ This does the radio only, and it does it the way a radio head should behave.
 
 It is self-contained - no .NET runtime to install, no driver, no SimConnect redistributable.
 
+Close PU CONNECT while it runs. The panel's serial port takes one program, and the window says
+which one has it and offers a **Close PU CONNECT** button. Nothing closes unless you press it.
+
 ### First launch
 
 The panel keeps its selected COM/NAV mode inside its own firmware and only reports it when a
-control changes. The bridge remembers where you left each row, so the window and the panel come
-up correct from the first second, marked **LAST SESSION**. The first touch confirms it, or corrects
-it if you moved a switch while the app was closed.
+control changes. Until you touch something, nothing on the wire says which row is COM and there
+are no frequencies to show, so the panel runs its clock and the window says **PRESS A PANEL KEY**.
 
-From then on the panel's mode switches drive the mode: the app follows the hardware, never the
-other way round. On a completely fresh install there is nothing to remember yet, so the window
-says **PRESS A PANEL KEY** and the panel shows the clock until you turn or rock something.
+Turn a knob or rock a switch once. After that the panel's mode switches drive the mode: the app
+follows the hardware, never the other way round. The clock comes back whenever the sim is not
+running.
 
 ### If MSFS lists the panel as a game controller
 
@@ -75,6 +83,10 @@ window shows the whole frequency; both agree.
 
 ## Settings
 
+<img src="docs/settings-light.png" width="440" alt="Magenta Bridge settings in light mode: text and numeric brightness, the panel clock switched on, dim zeros on, knob push and faster spin on, start with Windows on, open minimised off, light theme, and the resolved SimConnect client with the config path">
+
+
+
 - **Text brightness** and **numeric brightness** - the two brightness fields the firmware takes.
   Both are remembered.
 - **Show local and Zulu time when idle** - uses the panel as a clock before the sim connects, in
@@ -85,9 +97,8 @@ window shows the whole frequency; both agree.
   nothing.
 - **Faster spin, more than one step per detent** - off by default. One click is one step; turning
   it on lets a fast spin cover more ground, at the cost of precision.
-- **Open minimised to the tray** - applies to any launch, not just Windows startup. The tray icon
-  brings the window back.
-- **Start with Windows**, **Always on top**, **Theme**.
+- **Start with Windows**, **Open minimised to the tray**, **Always on top**, **Dark theme** - every
+  setting is a checkbox, so the state is visible without reading a label.
 
 `Esc` hides to the tray. `Ctrl+L` copies the log. The tray icon has the same actions as the window.
 
@@ -107,7 +118,7 @@ window shows the whole frequency; both agree.
 - **The panel's own scanning misses inputs.** An independent HID capture, with no bridge running,
   saw roughly half the detents from a brisk turn. Light taps and fast flicks can be lost, and the
   knob push sometimes needs a deliberate half-second press. This is the panel's firmware, not the
-  bridge; the vendor software has the same behaviour. Turn deliberately.
+  bridge; PU CONNECT loses the same ones. Turn deliberately.
 - **Aircraft that do not use the standard radio events will not respond.** The bridge sends the
   standard COM/NAV SimConnect events that default aircraft and most add-ons honour. A study-level
   airliner with its own radio management panel may ignore them; nothing short of a WASM module can
@@ -140,7 +151,7 @@ endian, usage *n* at bit *n-1*:
 The mode bits are state, not presses. The rocker's contacts bounce for up to a second, so the mode
 is only believed after 220 ms of stability. The encoder frequently reports a moment with both
 direction bits set as the wiper crosses the midpoint; counting both cancels the click, which is
-the "skipping" the vendor app shows. A ring therefore counts at most one step per press and waits
+where skipped tuning comes from. A ring therefore counts at most one step per press and waits
 for an ambiguous report to resolve.
 
 **Serial output.** The display is driven over the panel's CDC port at 9600 8N1, one line, every
@@ -161,13 +172,21 @@ RADIO,<textBrightness>,<act1>,<stb1>,<act2>,<stb2>,<o1>,<o2>,<numericBrightness>
 twenty mapped events (whole/fraction step and transfer for four radios). The client DLL is
 discovered from the sim's own install rather than shipped.
 
+## The Magenta Bridge family
+
+[Magenta Bridge for Octavi IFR-1](https://github.com/flyingsotong/magenta-bridge-octavi-ifr1) does
+the same job for Octavi's panel and has its own
+[page](https://magentadebrief.com/magenta-bridge/). This build is the second client, made at my
+own desk for the panels I fly with. Both are free and MIT.
+
 ## Uninstall
 
 Close the app from the tray, delete its folder, then remove the startup entry if you enabled it
 (`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, value `Magenta Bridge (PU Air Radio)`) and
 the settings at `%APPDATA%\MagentaBridge\PuAirRadio`.
 
-## Licence
+## License
 
-MIT. Not affiliated with PU AIR KOREA. PU Radio is their product; this is an independent client
-written against its observable behaviour.
+MIT. Not affiliated with PU AIR KOREA and not endorsed by them. PU Radio is their product; this is
+an independent client written against its observable behaviour. PU CONNECT remains the vendor's
+supported software.
