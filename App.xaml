@@ -26,8 +26,11 @@
               </StackPanel>
               <ControlTemplate.Triggers>
                 <Trigger Property="IsChecked" Value="True">
+                  <!-- No stroke when on: the fill must reach the edge, or the 1 px border
+                       leaves a dark rim inside a 15 px box. -->
                   <Setter TargetName="Box" Property="Background" Value="{DynamicResource Brush.Accent}" />
                   <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource Brush.Accent}" />
+                  <Setter TargetName="Box" Property="BorderThickness" Value="0" />
                 </Trigger>
                 <Trigger Property="IsMouseOver" Value="True">
                   <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource Brush.Accent}" />
