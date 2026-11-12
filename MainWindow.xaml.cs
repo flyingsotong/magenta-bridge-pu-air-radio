@@ -484,10 +484,47 @@ public partial class MainWindow : Window
             SettingsClientText.Text = string.IsNullOrWhiteSpace(_engine.State.SimClientPath)
                 ? "SimConnect client: not loaded"
                 : _engine.State.SimClientPath;
+            SettingsClientHint.Text = "";
         }
         finally
         {
             _syncingSettings = false;
+        }
+    }
+
+    /// <summary>
+    /// Lets the user point at the client by hand. The search covers the Store and Steam
+    /// defaults, so this is the way out when the sim sits somewhere unusual.
+    /// </summary>
+    private void OnLocateClient(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "Pick the SimConnect client from your MSFS folder",
+            Filter = "SimConnect client (SimConnect*.dll)|SimConnect*.dll|DLL files (*.dll)|*.dll",
+            CheckFileExists = true,
+        };
+
+        if (dialog.ShowDialog(this) != true) return;
+
+        var pick = dialog.FileName;
+        if (!System.IO.Path.GetFileName(pick).StartsWith("SimConnect", StringComparison.OrdinalIgnoreCase))
+        {
+            SettingsClientHint.Text = "That is not a SimConnect client. Its file name starts with SimConnect.";
+            return;
+        }
+
+        _engine.Config.SimConnect.ClientDllPath = pick;
+        try
+        {
+            _engine.Config.Save();
+            SettingsClientHint.Text = "Saved. Restart Magenta Bridge and it will use this file.";
+            Log.Info($"SimConnect client chosen by hand: {pick}");
+        }
+        catch (Exception ex)
+        {
+            SettingsClientHint.Text = "Could not save the config: " + ex.Message;
+            Log.Error("could not save the SimConnect client path", ex);
         }
     }
 

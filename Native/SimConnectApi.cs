@@ -87,15 +87,17 @@ public sealed class SimConnectApi : IDisposable
             list.Add(overridePath!);
         }
 
-        // 1. Beside the app (the user can drop a newer client here deliberately).
-        list.Add(Path.Combine(AppContext.BaseDirectory, "SimConnect.dll"));
+        // 1. Beside the app: any client the user dropped here deliberately. The 2024 build
+        //    calls its copy SimConnect_internal.dll, so match the family rather than one name.
+        list.AddRange(ClientsIn(AppContext.BaseDirectory));
 
         // 2. An installed MSFS SDK, which carries the client matching the current sim.
         var sdk = Environment.GetEnvironmentVariable("MSFS_SDK") ?? "";
         if (sdk.Length > 0)
             list.Add(Path.Combine(sdk, "SimConnect SDK", "lib", "SimConnect.dll"));
 
-        // 3. The sim's own content folder on whichever drive it was installed to.
+        // 3. The sim's own content folder on whichever drive it was installed to, under the
+        //    Xbox app's "Xbox"/"XboxGames" folder.
         foreach (var root in SimInstallRoots())
         {
             if (!Directory.Exists(root)) continue;
@@ -110,16 +112,14 @@ public sealed class SimConnectApi : IDisposable
         {
             if (!Directory.Exists(root)) continue;
             foreach (var sim in new[] { "Microsoft Flight Simulator 2024", "Microsoft Flight Simulator" })
-            {
-                var content = Path.Combine(root, sim, "Content");
-                if (!Directory.Exists(content)) continue;
-                foreach (var file in Directory.GetFiles(content, "SimConnect*.dll")
-                             .OrderByDescending(File.GetLastWriteTimeUtc))
-                {
-                    list.Add(file);
-                }
-            }
+                list.AddRange(ClientsIn(Path.Combine(root, sim, "Content")));
         }
+
+        // 3c. A default Microsoft Store or Steam install, which keeps the client in the sim's
+        //     own packages folder instead of a drive-level XboxGames folder. This is the
+        //     common install, so it never depends on the user having picked a custom folder.
+        foreach (var folder in PackageFolders())
+            list.AddRange(ClientsIn(folder));
 
         // 4. Last resort: the copy the vendor bundle already left on this machine, so the
         //    panel keeps working before the user has a newer client. Versioned in the log.
@@ -153,6 +153,76 @@ public sealed class SimConnectApi : IDisposable
 
         roots.Add(@"C:\Program Files\WindowsApps");
         return roots;
+    }
+
+    /// <summary>
+    /// Every SimConnect client in one folder, newest first. The family matters: MSFS 2024
+    /// ships SimConnect_internal.dll, and a user who copies it here should be found.
+    /// </summary>
+    private static IEnumerable<string> ClientsIn(string folder)
+    {
+        try
+        {
+            if (!Directory.Exists(folder)) return Array.Empty<string>();
+            return Directory.GetFiles(folder, "SimConnect*.dll")
+                .OrderByDescending(File.GetLastWriteTimeUtc)
+                .ToList();
+        }
+        catch (IOException) { return Array.Empty<string>(); }
+        catch (UnauthorizedAccessException) { return Array.Empty<string>(); }
+    }
+
+    /// <summary>
+    /// Where a Store or Steam install keeps its content. The sim's own UserCfg.opt records
+    /// the real location, so a content folder moved to another drive is still found.
+    /// </summary>
+    private static IReadOnlyList<string> PackageFolders()
+    {
+        var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var roaming = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
+        // Microsoft Store (2024 package family, then 2020), then Steam, which keeps its
+        // per-sim folders in Roaming.
+        var roots = new[]
+        {
+            Path.Combine(local, "Packages", "Microsoft.Limitless_8wekyb3d8bbwe", "LocalCache"),
+            Path.Combine(local, "Packages", "Microsoft.FlightSimulator_8wekyb3d8bbwe", "LocalCache"),
+            Path.Combine(roaming, "Microsoft Flight Simulator 2024"),
+            Path.Combine(roaming, "Microsoft Flight Simulator"),
+        };
+
+        var folders = new List<string>();
+        foreach (var root in roots)
+        {
+            if (!Directory.Exists(root)) continue;
+            folders.Add(root);
+            folders.Add(Path.Combine(root, "Packages"));
+            var installed = InstalledPackagesPath(root);
+            if (installed.Length > 0) folders.Add(installed);
+        }
+
+        return folders;
+    }
+
+    /// <summary>Reads InstalledPackagesPath out of UserCfg.opt, the sim's content record.</summary>
+    private static string InstalledPackagesPath(string folder)
+    {
+        var opt = Path.Combine(folder, "UserCfg.opt");
+        try
+        {
+            if (!File.Exists(opt)) return "";
+            foreach (var line in File.ReadLines(opt))
+            {
+                var trimmed = line.Trim();
+                if (!trimmed.StartsWith("InstalledPackagesPath", StringComparison.OrdinalIgnoreCase)) continue;
+                var first = trimmed.IndexOf('"');
+                var last = trimmed.LastIndexOf('"');
+                if (first >= 0 && last > first) return trimmed.Substring(first + 1, last - first - 1);
+            }
+        }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+        return "";
     }
 
     public bool Load(SimConnectOptions options)
@@ -211,7 +281,8 @@ public sealed class SimConnectApi : IDisposable
             return true;
         }
 
-        LastError = "No SimConnect client DLL found. Install the MSFS SDK, or set simConnect.clientDllPath in config.json.";
+        LastError = "No SimConnect client DLL found. Use Settings > Locate the SimConnect file, " +
+                    "or set simConnect.clientDllPath in config.json.";
         Log.Error(LastError);
         return false;
     }

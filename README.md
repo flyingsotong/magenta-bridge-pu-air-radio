@@ -41,7 +41,13 @@ check that setting before you take it apart.
 3. If MSFS is already running it connects by itself; otherwise it waits and connects when you start
    the sim. The header dots show RADIO and MSFS independently.
 
-It is self-contained - no .NET runtime to install, no driver, no SimConnect redistributable.
+It is self-contained - no .NET runtime to install and no driver. It uses the SimConnect client
+that already ships with the simulator, so there is no redistributable to download.
+
+If the window says **SimConnect client: not loaded**, the app could not find that library, which
+happens when the sim sits somewhere unusual. Open **Settings**, press **Locate the SimConnect
+file**, and pick `SimConnect_internal.dll` from your MSFS install folder. Restart the app and it
+uses that copy.
 
 Close PU CONNECT while it runs. The panel's serial port takes one program, and the window says
 which one has it and offers a **Close PU CONNECT** button. Nothing closes unless you press it.
