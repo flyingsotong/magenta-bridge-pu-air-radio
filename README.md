@@ -196,3 +196,9 @@ the settings at `%APPDATA%\MagentaBridge\PuAirRadio`.
 MIT. Not affiliated with PU AIR KOREA and not endorsed by them. PU Radio is their product; this is
 an independent client written against its observable behaviour. PU CONNECT remains the vendor's
 supported software.
+
+## Supporting this
+
+It is free and it stays free. If it saved you a fight with the vendor app, there is a tip jar at
+[magentadebrief.com/donate](https://magentadebrief.com/donate/): one-off card payments, no
+subscription, and nothing here is ever gated behind a payment.
