@@ -379,7 +379,7 @@
                    Foreground="{DynamicResource Brush.Link}"
                    TextDecorations="Underline"
                    MouseLeftButtonUp="OnSendFeedback"
-                   Text="Send comments, bugs, anything" ToolTip="alan@magentadebrief.com" />
+                   Text="Does it work for you? Tell me" ToolTip="magentadebrief.com/feedback" />
       </StackPanel>
 
       <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">

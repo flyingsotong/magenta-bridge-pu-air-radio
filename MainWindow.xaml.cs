@@ -755,7 +755,7 @@ public partial class MainWindow : Window
     }
 
     private void OnSendFeedback(object sender, System.Windows.Input.MouseButtonEventArgs e) =>
-        OpenUrl("mailto:alan@magentadebrief.com?subject=Magenta%20Bridge%20(PU%20Radio)");
+        OpenUrl($"https://magentadebrief.com/feedback/?app=pu-air-radio&v={typeof(MainWindow).Assembly.GetName().Version?.ToString(3) ?? "1.0.0"}");
 
     private void OnMagenta(object sender, System.Windows.Input.MouseButtonEventArgs e) =>
         OpenUrl("https://magentadebrief.com");
